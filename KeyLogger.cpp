@@ -1,10 +1,10 @@
 #pragma once
 
+#include "PublicFunctions.hpp"
 #include "KeyLogger.hpp"
 #include <windows.h>
 #include <fstream>
 #include <filesystem>
-#include "../../../vs/Virus/PublicFunctions.hpp"
 
 namespace fs = std::filesystem;
 
