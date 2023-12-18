@@ -26,7 +26,6 @@ ScreenCapture::ScreenCapture()
 ScreenCapture::ScreenCapture(ScreenCapture& screenCapture)
 {
     SetDirectory(screenCapture.directory.c_str());
-    CreateScreenshotFolder();
 }
 
 ScreenCapture::ScreenCapture(const char* directory)
@@ -46,7 +45,7 @@ int ScreenCapture::SetDirectory(const char* directory)
     struct stat st;
     if (stat(directory, &st) == 0) {
         this->directory = directory + FOLDER_NAME;
-        if (CreateScreenshotFolder() == 0) {
+        if (CreateScreenshotFolder() == 0 || stat(directory, &st) == 0) {
             return STATUS_CODES(Success);
         }
     }
@@ -113,7 +112,7 @@ std::string ScreenCapture::CreateFileName()
     return fileName;
 }
 
-int ScreenCapture::TakeScreenShot()
+void ScreenCapture::TakeScreenShot()
 {
     CreateScreenShot();
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -123,10 +122,25 @@ int ScreenCapture::TakeScreenShot()
     fs::rename(fileName, folderDirectory + newFileName);
     fs::copy(folderDirectory + newFileName, directory);
     fs::remove(fileName);
-    return 0;
+    fs::remove((folderDirectory + newFileName));
 }
 
-int ScreenCapture::StartScreenCapture(uint32_t)
+void ScreenCapture::StartScreenCaptureThread(uint32_t interval)
 {
-    return 0;
+    while (captureState)
+    {
+        TakeScreenShot();
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval * 1000));
+    }
+}
+
+std::thread ScreenCapture::StartScreenCapture(uint32_t interval)
+{
+    std::thread thread_ScreenCapture(&ScreenCapture::StartScreenCaptureThread, this, interval);
+    return thread_ScreenCapture;
+}
+
+void ScreenCapture::StopScreenCapture()
+{
+    captureState = false;
 }
