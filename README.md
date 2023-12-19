@@ -10,7 +10,10 @@ Features:
   The screen capture stops when the function "StopScreenCapture()" is called.
 
 To Do:
- -Take screenshots using winapi
+ -Take screenshots using winapi instead of "Win + Print screen" 
+ -Set files to startup
  -Hide program from task manager
  -Make program work while in lock screen 
  -Make functions to copy files in a given directory
+ -Make a website to control the malware and activate functions
+ -Send stolen data through the website
