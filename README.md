@@ -9,4 +9,8 @@ Features:
   Start capturing screenshots every given interval, the screenshots will be placed in a given directory and its name will be the date and time in which the screenshot was taken.
   The screen capture stops when the function "StopScreenCapture()" is called.
 
-
+To Do:
+ -Take screenshots using winapi
+ -Hide program from task manager
+ -Make program work while in lock screen 
+ -Make functions to copy files in a given directory
